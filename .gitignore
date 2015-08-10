@@ -5,3 +5,5 @@ Vlogging/.vs/Vlogging/v14/vbcs.cache/edb.chk
 /Vlogging/.vs/Vlogging/v14/vbcs.cache
 /Vlogging/src/Vlogging/wwwroot/bin
 /Vlogging/.vs/Vlogging/v14/.suo
+VLogging/src/VLogging/wwwroot/lib/*
+Vlogging/src/Vlogging/wwwroot/css/*

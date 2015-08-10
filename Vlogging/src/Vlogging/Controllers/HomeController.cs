@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 
-namespace Vlogging.Controllers
+namespace VLogging.Controllers
 {
     public class HomeController : Controller
     {
@@ -14,14 +15,14 @@ namespace Vlogging.Controllers
 
         public IActionResult About()
         {
-            ViewBag.Message = "Your application description page.";
+            ViewData["Message"] = "Your application description page.";
 
             return View();
         }
 
         public IActionResult Contact()
         {
-            ViewBag.Message = "Your contact page.";
+            ViewData["Message"] = "Your contact page.";
 
             return View();
         }

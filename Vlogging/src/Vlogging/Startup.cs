@@ -1,29 +1,29 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
-using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Security.Cookies;
-using Microsoft.Data.Entity;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Console;
-using Vlogging.Models;
+using Microsoft.Framework.Runtime;
 
-namespace Vlogging
+namespace VLogging
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IHostingEnvironment env, IApplicationEnvironment appEnv)
         {
             // Setup configuration sources.
-            Configuration = new Configuration()
+            var builder = new ConfigurationBuilder(appEnv.ApplicationBasePath)
                 .AddJsonFile("config.json")
                 .AddEnvironmentVariables();
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; set; }
@@ -31,37 +31,27 @@ namespace Vlogging
         // This method gets called by the runtime.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add EF services to the services container.
-            services.AddEntityFramework(Configuration)
-                .AddSqlServer()
-                .AddDbContext<ApplicationDbContext>();
-
-            // Add Identity services to the services container.
-            services.AddIdentity<ApplicationUser, IdentityRole>(Configuration)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
-
             // Add MVC services to the services container.
             services.AddMvc();
 
-            // Uncomment the following line to add Web API servcies which makes it easier to port Web API 2 controllers.
-            // You need to add Microsoft.AspNet.Mvc.WebApiCompatShim package to project.json
+            // Uncomment the following line to add Web API services which makes it easier to port Web API 2 controllers.
+            // You will also need to add the Microsoft.AspNet.Mvc.WebApiCompatShim package to the 'dependencies' section of project.json.
             // services.AddWebApiConventions();
-
         }
 
         // Configure is called after ConfigureServices is called.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerfactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            loggerFactory.MinimumLevel = LogLevel.Information;
+            loggerFactory.AddConsole();
+
             // Configure the HTTP request pipeline.
-            // Add the console logger.
-            loggerfactory.AddConsole();
 
             // Add the following to the request pipeline only in development environment.
-            if (string.Equals(env.EnvironmentName, "Development", StringComparison.OrdinalIgnoreCase))
+            if (env.IsDevelopment())
             {
                 app.UseBrowserLink();
                 app.UseErrorPage(ErrorPageOptions.ShowAll);
-                app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
             }
             else
             {
@@ -73,16 +63,12 @@ namespace Vlogging
             // Add static files to the request pipeline.
             app.UseStaticFiles();
 
-            // Add cookie-based authentication to the request pipeline.
-            app.UseIdentity();
-
             // Add MVC to the request pipeline.
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller}/{action}/{id?}",
-                    defaults: new { controller = "Home", action = "Index" });
+                    template: "{controller=Home}/{action=Index}/{id?}");
 
                 // Uncomment the following line to add a route for porting Web API 2 controllers.
                 // routes.MapWebApiRoute("DefaultApi", "api/{controller}/{id?}");
