@@ -10,6 +10,7 @@ For Start with new project:
  Step 2. Add Microsoft.Framework.Logging.NLog to project.json
  
  Code:
+ 
  var config = new XmlLoggingConfiguration(Configuration.Get("DNX_APPBASE")+ "\\NLog.config");
  
  var fact = new NLog.LogFactory(config);
