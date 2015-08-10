@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net.Mime;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
@@ -12,11 +16,17 @@ using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Console;
 using Microsoft.Framework.Runtime;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
+using ILogger = Microsoft.Framework.Logging.ILogger;
 
 namespace VLogging
 {
     public class Startup
     {
+        private ILogger _logger;
+
         public Startup(IHostingEnvironment env, IApplicationEnvironment appEnv)
         {
             // Setup configuration sources.
@@ -33,7 +43,6 @@ namespace VLogging
         {
             // Add MVC services to the services container.
             services.AddMvc();
-
             // Uncomment the following line to add Web API services which makes it easier to port Web API 2 controllers.
             // You will also need to add the Microsoft.AspNet.Mvc.WebApiCompatShim package to the 'dependencies' section of project.json.
             // services.AddWebApiConventions();
@@ -42,11 +51,21 @@ namespace VLogging
         // Configure is called after ConfigureServices is called.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.MinimumLevel = LogLevel.Information;
-            loggerFactory.AddConsole();
+            _logger = loggerFactory.CreateLogger(typeof(Program).FullName);
 
-            // Configure the HTTP request pipeline.
+            // Step 1. Create configuration object
+            var config = new XmlLoggingConfiguration(Configuration.Get("DNX_APPBASE")+ "\\NLog.config");
 
+            //add to source nuget 'https://www.myget.org/F/aspnetvnext/'
+            //add Microsoft.Framework.Logging.NLog to project.json
+            var fact = new NLog.LogFactory(config);
+            loggerFactory.AddNLog(fact);
+
+
+            var startTime = DateTimeOffset.UtcNow;
+            _logger.LogInformation(1, "Started at '{StartTime}' and 0x{Hello:X} is hex of 42", startTime, 42);
+
+           // Configure the HTTP request pipeline.
             // Add the following to the request pipeline only in development environment.
             if (env.IsDevelopment())
             {
